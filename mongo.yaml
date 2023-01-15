@@ -1,0 +1,39 @@
+namespace: mongodb
+
+mongodb:
+  defines: runnable
+  version: latest
+  services:
+    mongodb:
+      container: mongodb
+      port: 27017
+      protocol: tcp
+      host-port: 27017 
+  metadata:
+    defines: metadata
+    name: Mongodb
+    description: The developer data platform that provides the services and tools necessary to build distributed applications fast, at the performance and scale users demand.
+    tags: database, nosql
+    website: https://github.com/mongodb/mongo
+    source: https://www.mongodb.com/
+    publisher: monk.io
+    icon: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRA8VbFgxH-i78AZmNqD93mVRkTRd30POqLeCmg9T05ug&s
+  containers:
+    defines: containers
+    zookeeper:
+      image: docker.io/bitnami/mongodb
+      image-tag: <- `${mongo-image}`
+      ports:
+        - 27017:27017
+      environment:
+        - <- `MONGO_INITDB_ROOT_USERNAME=${mongo-init-root-username}`
+        - <- `MONGO_INITDB_ROOT_PASSWORD=${mongo-init-root-password}`
+      paths: 
+        - <- `${volume_local}:/bitnami/mongodb`
+  variables:
+    volume_local:
+      type: string
+      value: <- `${moncc-volume-path}/mongodb`
+    mongo-image:
+      value: <- $mongo-image-tag
+      type: string

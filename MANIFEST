@@ -1,0 +1,2 @@
+REPO monk-kafka
+LOAD kafka.yaml stack.yaml

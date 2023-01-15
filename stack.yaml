@@ -1,0 +1,8 @@
+namespace: mongodb
+
+stack:
+  defines: process-group
+  runnable-list:
+    - mongodb/mongodb
+  variables:
+    mongo-image-tag: "6.0.3-0"
