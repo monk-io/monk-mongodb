@@ -5,4 +5,8 @@ stack:
   runnable-list:
     - mongodb/mongodb
   variables:
-    mongo-image-tag: "6.0.3-0"
+    mongo-image-tag: "6.0"
+    mongo-express-image-tag: "latest"
+    mongodb-init-username: "mongo"
+    mongodb-init-password: "password"
+    mongodb-init-database: "mongo"
