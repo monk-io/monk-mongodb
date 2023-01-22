@@ -1,8 +1,6 @@
-# Monk & ELK Stack
+# Monk & MongoDB
 
-This repository contains Monk.io template to deploy ELK Stack (Elasticsearch, kibana and logstash) system either locally or on cloud of your choice (AWS, GCP, Azure, Digital Ocean).
-
-This template includes Nginx as a reverse proxy  with ELK Stack  out of box.
+This repository contains Monk.io template to deploy MongoDB (MongoDB and MongoDB Express) system either locally or on cloud of your choice (AWS, GCP, Azure, Digital Ocean).
 
 ## Start
 
@@ -14,14 +12,14 @@ Start `monkd` and login.
 monk login --email=<email> --password=<password>
 ```
 
-## Clone Monk ELK repository
+## Clone Monk MongoDB repository
 
 In order to load templates and change configuration simply use below commands: 
 ```bash
-git clone https://github.com/monk-io/monk-elk
+git clone https://github.com/monk-io/monk-mongodb
 
 # and change directory to the monk-elk template folder
-cd monk-elk
+cd monk-mongodb
 
 ```
 
@@ -29,54 +27,27 @@ cd monk-elk
 
 You can add/remove configuration of the template.
 
-The current variables can be found in `elk/variables` section
+The current variables can be found in `mongodb/variables` section
 
 ```yaml
   variables:
-    elasticsearch-image-tag: 7.9.0
-    elasticsearch-jvm-options: "-Xmx256m -Xms256m"
-    elasticsearch-http-port: 9200
-    elasticsearch-internal-port: 9300
-    kibana-http-port: 5601
-    kibana-image-tag: 7.9.0
-    logstash-image-tag: 7.17.5
-    logstash-jvm-options: "-Xmx256m -Xms256m"   
-    logstash-http-port: 9600
-    nginx-listen-port: 8080
-    nginx-image-tag: "latest"
+    mongo-image-tag: "latest"
+    mongo-express-image-tag: "latest"
+    mongodb-init-username: "mongo"
+    mongodb-init-password: "password"
+    mongodb-init-database: "mongo"
 ```
-
-### ELK Stack configuration files
-
-You can find configuration files in `/files` directory in repository and can edit before the running kit. There are 4 configuration files which bind to the container while run monk-elk kit 
-
-
-| Configuration File	 | Format Used | Directory in Container | Purpose 
-|----------|-------------|------|---------|
-| **elasticsearch.yml** | yaml | ` /usr/share/elasticsearch/config/elasticsearch.yml` | Primary configuration file for Elasticsearch
-| **kibana.yml** | yaml | `/usr/share/kibana/config/kibana.yml` | The Kibana server reads properties from the kibana.yml file on startup. | 
-| **logstash.yml** | yaml | `/usr/share/logstash/config/logstash.yml` | You can set options in the Logstash settings file, logstash.yml, to control Logstash execution |
-| **pipeline/logstash.conf** | configuration file | `/usr/share/logstash/pipeline/logstash.conf` | You can create a pipeline by stringing together plugins, inputs, outputs, filters, and sometimes codecs in order to process data. |
-
-
-
-
 
 ##  Template variables
 
 | Variable | Description | Type | Example |
 |----------|-------------|------|---------|
-| **elasticsearch-image-tag** | Elasticsearch image version. | string | 7.9.0 |
-| **elasticsearch-jvm-options** | Elasticsearch jvm options. | string | "-Xmx256m -Xms256m" |
-| **elasticsearch-http-port** | Elasticsearch port that will accept requests | int | 9200
-| **elasticsearch-internal-port** | Elasticsearch custom port for the node to node communication | int | 9300
-| **kibana-http-port** | Kibana http port for UI | int | 9300 |
-| **kibana-image-tag** | Kibana image version. | string | 7.9.0 |
-| **logstash-image-tag** | Logstash image version. | string | 7.17.5 |
-| **logstash-jvm-options** | Logstash jvm options. | string | "-Xmx256m -Xms256m" |
-| **logstash-http-port** | Logstash port that will accept requests | int | 9600
-| **nginx-listen-port** | Configures the ports that the nginx listens on. | int | 80 |
-| **nginx-image-tag** | Nginx image version. | string | latest |
+| **mongo-image-tag** | Elasticsearch image version. | string | latest |
+| **mongo-image-tag** | Elasticsearch image version. | string | latest |
+| **mongodb-init-username** | MongoDB Initial root username. | string | mongo |
+| **mongodb-init-password** | MongoDB Initial root password. | string | password |
+| **mongodb-init-database** | MongoDB Initial root database. | string | mongo |
+
 
 
 
@@ -90,40 +61,30 @@ First clone the repository simply run below command after launching `monkd`:
 
 ✨ Loaded:
  ├─🔩 Runnables:
- │  ├─🧩 elk/logstash
- │  ├─🧩 elk/nginx
- │  ├─🧩 elk/elasticsearch
- │  └─🧩 elk/kibana
+ │  ├─🧩 mongodb/mongodb
+ │  └─🧩 mongodb/mongodb-express
  ├─🔗 Process groups:
- │  └─🧩 elk/stack
+ │  └─🧩 mongodb/stack
  └─⚙️ Entity instances:
-    ├─🧩 elk/logstash/metadata
-    ├─🧩 elk/kibana/metadata
-    └─🧩 elk/elasticsearch/metadata
+    └─🧩 mongodb/mongodb/metadata
 ✔ All templates loaded successfully
 
-➜  monk list -l elk
+➜  monk list -l mongo
 
 ✔ Got the list
-✔ Got the list
-Type      Template                         Repository  Version      Tags
-runnable  elk/elasticsearch                local       -            self hosted, search platform,
-runnable  elk/kibana                       local       -            self hosted, visualization, monitoring
-runnable  elk/logstash                     local       -            self hosted, data processing pipeline, logging
-runnable  elk/nginx                        local       -            -
-group     elk/stack                        local       -            -
-runnable  nginx/latest                     elk         -            -
-runnable  nginx/reverse-proxy              elk         -            -
-runnable  nginx/reverse-proxy-ssl-certbot  elk         1.15-alpine  -
+Type      Template                 Repository  Version  Tags
+runnable  mongodb/mongodb          local       latest   database, nosql
+runnable  mongodb/mongodb-express  local       latest   -
+group     mongodb/stack            local       -        -
 
 
-➜  monk run --local-only elk/stack
+➜  monk run mongodb/stack
 
-✔ Started local/elk/stack
+✔ Started local/mongodb/stack
 
 ```
 
-This will start the entire elk/stack with a Nginx reverse proxy. 
+This will start the entire mongodb/stack.
 
 
 ## Cloud Deployment
@@ -131,37 +92,27 @@ This will start the entire elk/stack with a Nginx reverse proxy.
 To deploy the above system to your cloud provider, create a new Monk cluster and provision your instances.
 
 ```bash
-➜  monk cluster new
-? New cluster name elkstack
+➜  monk cluster new -n monkha
 ✔ Cluster created
 Your cluster has been created successfully.
 
-➜  monk cluster provider add -p gcp -f <path/to/your-key.json>
+➜  monk cluster provider add -p aws -f <path/to/your-credentials-file>
 ✔ Provider added successfully
 
-➜  monk cluster grow -p gcp
-? Cloud provider gcp
-? Name of the new instance elk-instance
-? Tags (split by whitespace) elkstack
-? Region europe-central2
-? Zone europe-central2-a
-? Instance type e2-medium
-? Number of instances (or press ENTER to use default = 1) 3
-? Default disk type for gcp is HDD (pd-standard). Would you like to change it? No
-? Disk size (or press ENTER to use default = 250 GBs) 50
-✔ Start creation of new instance(s) on gcp... DONE
-✔ Creating node: my-instance-1 DONE
-✔ Initializing node: my-instance-1 DONE
-✔ Creating node: my-instance-2 DONE
-✔ Initializing node: my-instance-2 DONE
-✔ Creating node: my-instance-3 DONE
-✔ Initializing node: my-instance-3 DONE
-✔ Connecting: my-instance-1 DONE
-✔ Syncing peer: my-instance-1 DONE
-✔ Connecting: my-instance-2 DONE
-✔ Connecting: my-instance-3 DONE
-✔ Syncing peer: my-instance-2 DONE
-✔ Syncing peer: my-instance-3 DONE
+➜   monk cluster grow -p  aws --name monkha --tag monkha  -i t3.large --region eu-north-1 -m 3 -d 50 --disk-type SSD
+✔ Start creation of new instance(s) on aws... DONE
+✔ Creating node: monkha-1 DONE
+✔ Creating node: monkha-2 DONE
+✔ Initializing node: monkha-1 DONE
+✔ Initializing node: monkha-2 DONE
+✔ Creating node: monkha-3 DONE
+✔ Initializing node: monkha-3 DONE
+✔ Connecting: monkha-1 DONE
+✔ Syncing peer: monkha-1 DONE
+✔ Connecting: monkha-2 DONE
+✔ Syncing peer: monkha-2 DONE
+✔ Connecting: monkha-3 DONE
+✔ Syncing peer: monkha-3 DONE
 ✔ Syncing nodes DONE
 ✔ Cluster grown successfully
 ```
@@ -172,36 +123,26 @@ Once cluster is ready execute the same command as for local and select your clus
 
 ✨ Loaded:
  ├─🔩 Runnables:
- │  ├─🧩 elk/logstash
- │  ├─🧩 elk/nginx
- │  ├─🧩 elk/elasticsearch
- │  └─🧩 elk/kibana
+ │  ├─🧩 mongodb/mongodb
+ │  └─🧩 mongodb/mongodb-express
  ├─🔗 Process groups:
- │  └─🧩 elk/stack
+ │  └─🧩 mongodb/stack
  └─⚙️ Entity instances:
-    ├─🧩 elk/logstash/metadata
-    ├─🧩 elk/kibana/metadata
-    └─🧩 elk/elasticsearch/metadata
+    └─🧩 mongodb/mongodb/metadata
 ✔ All templates loaded successfully
 
-➜  monk list -l elk
+➜  monk list -l mongo
 
 ✔ Got the list
-✔ Got the list
-Type      Template                         Repository  Version      Tags
-runnable  elk/elasticsearch                local       -            self hosted, search platform,
-runnable  elk/kibana                       local       -            self hosted, visualization, monitoring
-runnable  elk/logstash                     local       -            self hosted, data processing pipeline, logging
-runnable  elk/nginx                        local       -            -
-group     elk/stack                        local       -            -
-runnable  nginx/latest                     elk         -            -
-runnable  nginx/reverse-proxy              elk         -            -
-runnable  nginx/reverse-proxy-ssl-certbot  elk         1.15-alpine  -
+Type      Template                 Repository  Version  Tags
+runnable  mongodb/mongodb          local       latest   database, nosql
+runnable  mongodb/mongodb-express  local       latest   -
+group     mongodb/stack            local       -        -
 
 
-➜  monk run --local-only elk/stack
+➜  monk run -t monkha mongodb/stack
 
-✔ Started local/elk/stack
+✔ Started local/mongodb/stack
 
 
 ```
@@ -209,42 +150,25 @@ runnable  nginx/reverse-proxy-ssl-certbot  elk         1.15-alpine  -
 ## Logs & Shell
 
 ```bash
-# show Elasticsearch logs
-➜  monk logs -l 1000 -f elk/elasticsearch
+# show MongoDB logs
+➜  monk logs -l 1000 -f mongodb/mongodb
 
-# show Kibana logs
-➜  monk logs -l 1000 -f elk/kibana
+# show MongoDB-express logs
+➜  monk logs -l 1000 -f mongodb/mongodb-express
 
-# show Logstash logs
-➜  monk logs -l 1000 -f elk/logstash
+# access shell in the container running MongoDB
+➜  monk shell mongodb/mongodb
 
-# show nginx logs
-➜  monk logs -l 1000 -f elk/nginx
-
-
-# access shell in the container running Elasticsearch
-➜  monk shell elk/elasticsearch
-
-# access shell in the container running Kibana
-➜  monk shell elk/kibana
-
-# access shell in the container running Logstash
-➜  monk shell elk/logstash
-
-# access shell in the container running Nginx
-➜  monk shell elk/nginx
-
+# access shell in the container running MongoDB Express 
+➜  monk shell mongodb/mongodb-express
 ```
 
 ## Stop, remove and clean up workloads and templates
 
 ```bash
-➜ monk purge -x elk/stack elk/elasticsearch elk/kibana elk/logstash elk/nginx
+➜ monk purge  --ii --rv --rs --no-confirm --rv --rs   mongodb/mongodb-express  mongodb/mongodb mongodb/stack 
 
-✔ elk/stack purged
-✔ elk/elasticsearch purged
-✔ elk/kibana purged
-✔ elk/logstash purged
-✔ elk/nginx purged
-
+✔ mongodb/mongodb-express purged
+✔ mongodb/mongodb purged
+✔ mongodb/stack purged
 ```

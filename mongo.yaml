@@ -3,6 +3,11 @@ namespace: mongodb
 mongodb:
   defines: runnable
   version: latest
+  readiness:
+      code: |
+          exec("mongodb", "/usr/bin/bash", "-c", "echo "db.runCommand({serverStatus: 1}).ok" | mongosh -u ${mongo-init-username} -p ${mongo-init-password} --quiet | grep 1") "1" contains?
+      period: 10
+      initialDelay: 5    
   services:
     mongodb:
       container: mongodb
@@ -50,6 +55,10 @@ mongodb:
 mongodb-express:
   defines: runnable
   version: latest
+  depends:
+    wait-for:
+      runnables:
+        - mongodb/mongodb  
   services:
     mongodb:
       container: mongodb-express
