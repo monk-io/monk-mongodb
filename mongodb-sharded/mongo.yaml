@@ -1,0 +1,218 @@
+namespace: mongodb-sharded
+
+mongodb-common:
+  defines: runnable
+  version: latest
+  metadata:
+    defines: metadata
+    name: Mongodb
+    description: The developer data platform that provides the services and tools necessary to build distributed applications fast, at the performance and scale users demand.
+    tags: database, nosql
+    website: https://github.com/mongodb/mongo
+    source: https://www.mongodb.com/
+    publisher: monk.io
+    icon: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRA8VbFgxH-i78AZmNqD93mVRkTRd30POqLeCmg9T05ug&s
+  services:
+    mongo:
+      container: mongodb
+      port: 27017
+      protocol: tcp
+      host-port: <- `${host-port}` to-i
+  connections:
+      mongo-1:
+        runnable: mongodb-sharded/mongodb-1
+        service: mongo
+      mongo-2:
+        runnable: mongodb-sharded/mongodb-2
+        service: mongo
+      mongo-3:
+        runnable: mongodb-sharded/mongodb-3
+        service: mongo                  
+  containers:
+    mongodb:
+      image: mongo
+      image-tag: <- `${mongo-image}`
+      entrypoint: "/usr/bin/mongod --bind_ip_all --replSet dbrs"
+      environment:
+        - <- `MONGO_INITDB_ROOT_USERNAME=${mongo-init-username}`
+        - <- `MONGO_INITDB_ROOT_PASSWORD=${mongo-init-password}`
+      paths: 
+        - <- `${volume_local}:/data/db`
+      ports:
+      - <- `${host-port}:27017`        
+  variables:
+    volume_local:
+      type: string
+      value: <- `${moncc-volume-path}/mongodb`
+    mongo-image:
+      value: <- $mongo-image-tag
+      type: string
+    mongo-init-username:
+      value: <- $mongodb-init-username
+      type: string
+    mongo-init-password:
+      value: <- $mongodb-init-password
+      type: string
+    host-port:
+      value: 27017
+      type: int
+
+mongodb-1:
+  defines: runnable
+  inherits: mongodb-sharded/mongodb-common
+  depends:
+    wait-for:
+      runnables:
+        - mongodb-sharded/mongodb-2
+        - mongodb-sharded/mongodb-3  
+  variables:
+    volume_local:
+      type: string
+      value: <- `${moncc-volume-path}/mongodb-1`
+    host-port:
+      value: 27017
+      type: int
+    mongo1-url:
+      type: string
+      value: <- connection-hostname("mongo-1") ":" connection-port("mongo-1") concat-all
+    mongo2-url:
+      type: string
+      value: <- connection-hostname("mongo-2") ":" connection-port("mongo-2") concat-all
+    mongo3-url:
+      type: string
+      value: <- connection-hostname("mongo-3") ":" connection-port("mongo-3") concat-all
+  files:
+      init-script:
+        container: mongodb
+        mode: 0645
+        path: /scripts/rs-init.sh
+        contents: <<< files/rs-init.sh
+  actions:
+      create-cluster:
+        code: exec("mongodb-sharded/mongodb-1", "mongodb" "/bin/bash", "-c", "/scripts/rs-init.sh > /scripts/output.logs")                               
+
+mongodb-2:
+  defines: runnable
+  inherits: mongodb-sharded/mongodb-common   
+  variables:
+    volume_local:
+      type: string
+      value: <- `${moncc-volume-path}/mongodb-2`
+    host-port:
+      value: 27018
+      type: int              
+
+mongodb-3:
+  defines: runnable
+  inherits: mongodb-sharded/mongodb-common
+  variables:
+    volume_local:
+      type: string
+      value: <- `${moncc-volume-path}/mongodb-3`            
+    host-port:
+      value: 27019
+      type: int         
+
+mongodb-init:
+  defines: runnable
+  depends:
+    wait-for:
+      runnables:
+        - mongodb-sharded/mongodb-1 
+        - mongodb-sharded/mongodb-2
+        - mongodb-sharded/mongodb-3        
+  connections:
+      mongo-1:
+        runnable: mongodb-sharded/mongodb-1
+        service: mongo
+      mongo-2:
+        runnable: mongodb-sharded/mongodb-2
+        service: mongo
+      mongo-3:
+        runnable: mongodb-sharded/mongodb-3
+        service: mongo   
+  files:
+    init-script:
+      container: mongodb
+      mode: 0645
+      path: /scripts/rs-init.sh
+      contents: <<< files/rs-init.sh        
+  containers:
+    mongodb:
+      image: mongo
+      image-tag: <- `${mongo-image}`
+      entrypoint: "/usr/bin/mongod --bind_ip_all --replSet dbrs"
+      environment:
+        - <- `MONGO_INITDB_ROOT_USERNAME=${mongo-init-username}`
+        - <- `MONGO_INITDB_ROOT_PASSWORD=${mongo-init-password}`
+  actions:
+    defines: actions
+    create-cluster:
+      code: exec("mongodb" "/bin/bash", "-c", "/scripts/rs-init.sh > /scripts/output.logs")           
+  variables:
+    mongo-image:
+      value: <- $mongo-image-tag
+      type: string
+    mongo-init-username:
+      value: <- $mongodb-init-username
+      type: string
+    mongo-init-password:
+      value: <- $mongodb-init-password
+      type: string
+    mongo1-url:
+      type: string
+      value: <- connection-hostname("mongo-1") ":" connection-port("mongo-1") concat-all
+    mongo2-url:
+      type: string
+      value: <- connection-hostname("mongo-2") ":" connection-port("mongo-2") concat-all
+    mongo3-url:
+      type: string
+      value: <- connection-hostname("mongo-3") ":" connection-port("mongo-3") concat-all
+
+
+
+mongodb-express:
+  defines: runnable
+  version: latest
+  services:
+    mongodb:
+      container: mongodb-express
+      port: 8081
+      protocol: tcp
+      host-port: 8081
+  connections:
+    mongodb:
+      runnable: mongodb-sharded/mongodb-1
+      service: mongodb     
+  containers:
+    mongodb-express:
+      image: mongo-express
+      image-tag: <- `${mongo-image}`
+      ports:
+        - 8081:8081
+      environment:
+        - <- `ME_CONFIG_MONGODB_ADMINUSERNAME=${mongo-init-username}`
+        - <- `ME_CONFIG_MONGODB_ADMINPASSWORD=${mongo-init-password}`
+        - <- `ME_CONFIG_MONGODB_URL=mongodb://${mongo-init-username}:${mongo-init-password}@${mongo-server-url}`
+      cap-add:
+        - CAP_NET_BIND_SERVICE
+  variables:
+    volume_local:
+      type: string
+      value: <- `${moncc-volume-path}/mongodb-express`
+    mongo-image:
+      value: <- $mongo-image-tag
+      type: string
+    mongo-init-username:
+      value: <- $mongodb-init-username
+      type: string
+    mongo-init-password:
+      value: <- $mongodb-init-password
+      type: string
+    mongo-init-database:
+      value: <- $mongodb-init-database
+      type: string
+    mongo-server-url:
+      env: URL
+      type: string
+      value: <- connection-hostname("mongodb") ":" connection-port("mongodb") concat-all 
