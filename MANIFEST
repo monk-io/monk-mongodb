@@ -1,2 +1,2 @@
-REPO monk-kafka
+REPO monk-mongodb
 LOAD mongo.yaml stack.yaml
