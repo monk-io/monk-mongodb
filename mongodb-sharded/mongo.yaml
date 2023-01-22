@@ -89,7 +89,7 @@ mongodb-1:
         contents: <<< files/rs-init.sh
   actions:
       create-cluster:
-        code: exec("mongodb-sharded/mongodb-1", "mongodb" "/bin/bash", "-c", "/scripts/rs-init.sh > /scripts/output.logs")                               
+        code: exec("mongodb-sharded/mongodb-1", "mongodb" "/bin/bash", "-c", `/scripts/rs-init.sh > /scripts/output.logs`)                               
 
 mongodb-2:
   defines: runnable
@@ -113,61 +113,61 @@ mongodb-3:
       value: 27019
       type: int         
 
-mongodb-init:
-  defines: runnable
-  depends:
-    wait-for:
-      runnables:
-        - mongodb-sharded/mongodb-1 
-        - mongodb-sharded/mongodb-2
-        - mongodb-sharded/mongodb-3        
-  connections:
-      mongo-1:
-        runnable: mongodb-sharded/mongodb-1
-        service: mongo
-      mongo-2:
-        runnable: mongodb-sharded/mongodb-2
-        service: mongo
-      mongo-3:
-        runnable: mongodb-sharded/mongodb-3
-        service: mongo   
-  files:
-    init-script:
-      container: mongodb
-      mode: 0645
-      path: /scripts/rs-init.sh
-      contents: <<< files/rs-init.sh        
-  containers:
-    mongodb:
-      image: mongo
-      image-tag: <- `${mongo-image}`
-      entrypoint: "/usr/bin/mongod --bind_ip_all --replSet dbrs"
-      environment:
-        - <- `MONGO_INITDB_ROOT_USERNAME=${mongo-init-username}`
-        - <- `MONGO_INITDB_ROOT_PASSWORD=${mongo-init-password}`
-  actions:
-    defines: actions
-    create-cluster:
-      code: exec("mongodb" "/bin/bash", "-c", "/scripts/rs-init.sh > /scripts/output.logs")           
-  variables:
-    mongo-image:
-      value: <- $mongo-image-tag
-      type: string
-    mongo-init-username:
-      value: <- $mongodb-init-username
-      type: string
-    mongo-init-password:
-      value: <- $mongodb-init-password
-      type: string
-    mongo1-url:
-      type: string
-      value: <- connection-hostname("mongo-1") ":" connection-port("mongo-1") concat-all
-    mongo2-url:
-      type: string
-      value: <- connection-hostname("mongo-2") ":" connection-port("mongo-2") concat-all
-    mongo3-url:
-      type: string
-      value: <- connection-hostname("mongo-3") ":" connection-port("mongo-3") concat-all
+# mongodb-init:
+#   defines: runnable
+#   depends:
+#     wait-for:
+#       runnables:
+#         - mongodb-sharded/mongodb-1 
+#         - mongodb-sharded/mongodb-2
+#         - mongodb-sharded/mongodb-3        
+#   connections:
+#       mongo-1:
+#         runnable: mongodb-sharded/mongodb-1
+#         service: mongo
+#       mongo-2:
+#         runnable: mongodb-sharded/mongodb-2
+#         service: mongo
+#       mongo-3:
+#         runnable: mongodb-sharded/mongodb-3
+#         service: mongo   
+#   files:
+#     init-script:
+#       container: mongodb
+#       mode: 0645
+#       path: /scripts/rs-init.sh
+#       contents: <<< files/rs-init.sh        
+#   containers:
+#     mongodb:
+#       image: mongo
+#       image-tag: <- `${mongo-image}`
+#       entrypoint: "/usr/bin/mongod --bind_ip_all --replSet dbrs"
+#       environment:
+#         - <- `MONGO_INITDB_ROOT_USERNAME=${mongo-init-username}`
+#         - <- `MONGO_INITDB_ROOT_PASSWORD=${mongo-init-password}`
+#   actions:
+#     defines: actions
+#     create-cluster:
+#       code: exec("mongodb" "/bin/bash", "-c", "/scripts/rs-init.sh > /scripts/output.logs")           
+#   variables:
+#     mongo-image:
+#       value: <- $mongo-image-tag
+#       type: string
+#     mongo-init-username:
+#       value: <- $mongodb-init-username
+#       type: string
+#     mongo-init-password:
+#       value: <- $mongodb-init-password
+#       type: string
+#     mongo1-url:
+#       type: string
+#       value: <- connection-hostname("mongo-1") ":" connection-port("mongo-1") concat-all
+#     mongo2-url:
+#       type: string
+#       value: <- connection-hostname("mongo-2") ":" connection-port("mongo-2") concat-all
+#     mongo3-url:
+#       type: string
+#       value: <- connection-hostname("mongo-3") ":" connection-port("mongo-3") concat-all
 
 
 
