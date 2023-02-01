@@ -39,16 +39,16 @@ mongodb:
       type: string
       value: <- `${moncc-volume-path}/mongodb`
     mongo-image:
-      value: <- $mongo-image-tag default "latest"
+      value: <- $mongo-image-tag default("latest")
       type: string
     mongo-init-username:
-      value: <- $mongodb-init-username default "mongo"
+      value: <- $mongodb-init-username default("mongo")
       type: string
     mongo-init-password:
-      value: <- $mongodb-init-password default "password"
+      value: <- $mongodb-init-password default("password")
       type: string
     mongo-init-database:
-      value: <- $mongodb-init-database default "mongo"
+      value: <- $mongodb-init-database default("mongo")
       type: string 
 
 mongodb-express:
@@ -82,16 +82,16 @@ mongodb-express:
         - CAP_NET_BIND_SERVICE
   variables:
     mongo-image:
-      value: <- $mongo-image-tag default "latest"
+      value: <- $mongo-image-tag default("latest")
       type: string
     mongo-init-username:
-      value: <- $mongodb-init-username default "mongo"
+      value: <- $mongodb-init-username default("mongo")
       type: string
     mongo-init-password:
-      value: <- $mongodb-init-password default "password"
+      value: <- $mongodb-init-password default("password")
       type: string
     mongo-init-database:
-      value: <- $mongodb-init-database default "mongo"
+      value: <- $mongodb-init-database default("mongo")
       type: string
     mongo-server-url:
       env: URL
