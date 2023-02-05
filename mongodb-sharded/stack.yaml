@@ -6,10 +6,11 @@ stack:
     - mongodb-sharded/mongodb-1
     - mongodb-sharded/mongodb-2
     - mongodb-sharded/mongodb-3 
-    - mongodb-sharded/mongodb-init         
+    # - mongodb-sharded/mongodb-init         
     - mongodb-sharded/mongodb-express
   variables:
-    mongo-image-tag: "latest"
+    # mongo-image-tag: "1.0.0-alpha"
+    mongo-image-tag: "latest"    
     mongo-express-image-tag: "latest"
     mongodb-init-username: "mongo"
     mongodb-init-password: "password"

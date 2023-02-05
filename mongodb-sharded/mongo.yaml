@@ -59,7 +59,41 @@ mongodb-common:
 
 mongodb-1:
   defines: runnable
-  inherits: mongodb-sharded/mongodb-common
+  readiness:
+      code: |
+          exec("mongodb", "/usr/bin/bash", "-c", "echo "rs.status().ok" | mongosh -u ${mongo-init-username} -p ${mongo-init-password} --quiet | grep 1") "1" contains?
+      period: 10
+      initialDelay: 5  
+  containers:
+    mongodb:
+      image: mongo
+      image-tag: <- `${mongo-image}`
+      entrypoint: "/usr/bin/mongod --bind_ip_all --replSet dbrs"
+      environment:
+        - <- `MONGO_INITDB_ROOT_USERNAME=${mongo-init-username}`
+        - <- `MONGO_INITDB_ROOT_PASSWORD=${mongo-init-password}`
+      paths: 
+        - <- `${volume_local}:/data/db`
+      ports:
+      - <- `${host-port}:27017` 
+      hooks:
+        container-started: create-cluster
+  services:
+    mongo:
+      container: mongodb
+      port: 27017
+      protocol: tcp
+      host-port: <- `${host-port}` to-i
+  connections:
+      mongo-1:
+        runnable: mongodb-sharded/mongodb-1
+        service: mongo
+      mongo-2:
+        runnable: mongodb-sharded/mongodb-2
+        service: mongo
+      mongo-3:
+        runnable: mongodb-sharded/mongodb-3
+        service: mongo
   depends:
     wait-for:
       runnables:
@@ -68,7 +102,16 @@ mongodb-1:
   variables:
     volume_local:
       type: string
-      value: <- `${moncc-volume-path}/mongodb-1`
+      value: <- `${moncc-volume-path}/mongodb`
+    mongo-image:
+      value: <- $mongo-image-tag
+      type: string
+    mongo-init-username:
+      value: <- $mongodb-init-username
+      type: string
+    mongo-init-password:
+      value: <- $mongodb-init-password
+      type: string
     host-port:
       value: 27017
       type: int
@@ -89,7 +132,7 @@ mongodb-1:
         contents: <<< files/rs-init.sh
   actions:
       create-cluster:
-        code: exec("mongodb-sharded/mongodb-1", "mongodb" "/bin/bash", "-c", `/scripts/rs-init.sh`)                               
+        code: exec("mongodb", "/bin/bash", "-c", `/scripts/rs-init.sh`)                                          
 
 mongodb-2:
   defines: runnable
@@ -116,6 +159,16 @@ mongodb-3:
 mongodb-express:
   defines: runnable
   version: latest
+  readiness:
+      code: ["curl", "--fail", "http://localhost:8080"]
+      period: 10
+      initialDelay: 199
+  depends:
+    wait-for:
+      runnables:
+        - mongodb-sharded/mongodb-1
+        - mongodb-sharded/mongodb-2
+        - mongodb-sharded/mongodb-3   
   services:
     mongodb:
       container: mongodb-express
@@ -123,19 +176,34 @@ mongodb-express:
       protocol: tcp
       host-port: 8081
   connections:
-    mongodb:
-      runnable: mongodb-sharded/mongodb-1
-      service: mongodb     
+      mongo-1:
+        runnable: mongodb-sharded/mongodb-1
+        service: mongo
+      mongo-2:
+        runnable: mongodb-sharded/mongodb-2
+        service: mongo
+      mongo-3:
+        runnable: mongodb-sharded/mongodb-3
+        service: mongo    
   containers:
     mongodb-express:
+      bash: 'sleep 9999'
       image: mongo-express
       image-tag: <- `${mongo-image}`
       ports:
         - 8081:8081
       environment:
-        - <- `ME_CONFIG_MONGODB_ADMINUSERNAME=${mongo-init-username}`
-        - <- `ME_CONFIG_MONGODB_ADMINPASSWORD=${mongo-init-password}`
-        - <- `ME_CONFIG_MONGODB_URL=mongodb://${mongo-init-username}:${mongo-init-password}@${mongo-server-url}`
+        # - <- `ME_CONFIG_MONGODB_ADMINUSERNAME=${mongo-init-username}`
+        # - <- `ME_CONFIG_MONGODB_ADMINPASSWORD=${mongo-init-password}`
+        # - <- `ME_CONFIG_MONGODB_URL=mongodb://${mongo-init-username}:${mongo-init-password}@${mongo-server-url}/test`
+        - <- `ME_CONFIG_MONGODB_ENABLE_ADMIN=false`
+        - <- `ME_CONFIG_MONGODB_AUTH_DATABASE=test`
+        - <- `ME_CONFIG_MONGODB_AUTH_USERNAME=mongo`
+        - <- `ME_CONFIG_MONGODB_AUTH_PASSWORD=password`
+        - <- `ME_CONFIG_MONGODB_SERVER=${mongo-server-url}`
+        - <- `ME_CONFIG_MONGODB_PORT=27017`
+        - NODE_OPTIONS="--unhandled-rejections=strict"
+        # - <- `ME_CONFIG_MONGODB_URL=mongodb://${mongo-init-username}:${mongo-init-password}@${mongo-server-url}/test`        
       cap-add:
         - CAP_NET_BIND_SERVICE
   variables:
@@ -157,4 +225,4 @@ mongodb-express:
     mongo-server-url:
       env: URL
       type: string
-      value: <- connection-hostname("mongodb") ":" connection-port("mongodb") concat-all 
+      value: <- connection-hostname("mongo-1") ":" connection-port("mongo-1") concat-all 
