@@ -50,6 +50,11 @@ mongodb:
 mongodb-express:
   defines: runnable
   version: latest
+  depends:
+    wait-for:
+      runnables:
+        - mongodb/mongodb
+      timeout: 60
   services:
     mongodb:
       container: mongodb-express

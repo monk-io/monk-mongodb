@@ -168,7 +168,8 @@ mongodb-express:
       runnables:
         - mongodb-sharded/mongodb-1
         - mongodb-sharded/mongodb-2
-        - mongodb-sharded/mongodb-3   
+        - mongodb-sharded/mongodb-3
+      timeout: 30   
   services:
     mongodb:
       container: mongodb-express
