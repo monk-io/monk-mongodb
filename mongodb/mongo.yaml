@@ -47,6 +47,61 @@ mongodb:
       value: <- $mongodb-init-database
       type: string 
 
+mongodbtest:
+  defines: runnable
+  version: latest
+  services:
+    mongodb:
+      container: mongodb
+      port: 27017
+      protocol: tcp
+      host-port: 27017 
+  connections:
+    mongodb:
+      runnable: mongodb/mongodb
+      service: mongodb      
+  metadata:
+    defines: metadata
+    name: Mongodb
+    description: The developer data platform that provides the services and tools necessary to build distributed applications fast, at the performance and scale users demand.
+    tags: database, nosql
+    website: https://github.com/mongodb/mongo
+    source: https://www.mongodb.com/
+    publisher: monk.io
+    icon: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRA8VbFgxH-i78AZmNqD93mVRkTRd30POqLeCmg9T05ug&s
+  containers:
+    mongodb:
+      image: mongo
+      image-tag: <- `${mongo-image}`
+      ports:
+        - 27017:27017
+      environment:
+        - <- `MONGO_INITDB_ROOT_USERNAME=${mongo-init-username}`
+        - <- `MONGO_INITDB_ROOT_PASSWORD=${mongo-init-password}`
+        - <- `MONGO_INITDB_DATABASE=${mongo-init-database}`
+      paths: 
+        - <- `${volume_local}:/bitnami/mongodb`
+  variables:
+    volume_local:
+      type: string
+      value: <- `${moncc-volume-path}/mongodb`
+    mongo-image:
+      value: <- $mongo-image-tag
+      type: string
+    mongo-init-username:
+      value: <- $mongodb-init-username
+      type: string
+    mongo-init-password:
+      value: <- $mongodb-init-password
+      type: string
+    mongo-init-database:
+      value: <- $mongodb-init-database
+      type: string  
+    mongo-server-url:
+      env: URL
+      type: string
+      value: <- connection-hostname("mongodb") ":" connection-port("mongodb") concat-all           
+
 mongodb-express:
   defines: runnable
   version: latest
@@ -55,6 +110,10 @@ mongodb-express:
       runnables:
         - mongodb/mongodb
       timeout: 60
+  readiness:
+      code: ["curl", "--fail", "http://localhost:8080"]
+      period: 10
+      initialDelay: 30      
   services:
     mongodb:
       container: mongodb-express

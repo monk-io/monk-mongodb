@@ -160,16 +160,16 @@ mongodb-express:
   defines: runnable
   version: latest
   readiness:
-      code: ["curl", "--fail", "http://localhost:8080"]
+      code: ["curl", "--fail", "http://localhost:8081"]
       period: 10
-      initialDelay: 199
+      initialDelay: 20
   depends:
     wait-for:
       runnables:
         - mongodb-sharded/mongodb-1
         - mongodb-sharded/mongodb-2
         - mongodb-sharded/mongodb-3
-      timeout: 30   
+      timeout: 60 
   services:
     mongodb:
       container: mongodb-express
@@ -188,7 +188,6 @@ mongodb-express:
         service: mongo    
   containers:
     mongodb-express:
-      bash: 'sleep 9999'
       image: mongo-express
       image-tag: <- `${mongo-image}`
       ports:
@@ -197,13 +196,14 @@ mongodb-express:
         # - <- `ME_CONFIG_MONGODB_ADMINUSERNAME=${mongo-init-username}`
         # - <- `ME_CONFIG_MONGODB_ADMINPASSWORD=${mongo-init-password}`
         # - <- `ME_CONFIG_MONGODB_URL=mongodb://${mongo-init-username}:${mongo-init-password}@${mongo-server-url}/test`
-        - <- `ME_CONFIG_MONGODB_ENABLE_ADMIN=false`
-        - <- `ME_CONFIG_MONGODB_AUTH_DATABASE=test`
-        - <- `ME_CONFIG_MONGODB_AUTH_USERNAME=mongo`
-        - <- `ME_CONFIG_MONGODB_AUTH_PASSWORD=password`
-        - <- `ME_CONFIG_MONGODB_SERVER=${mongo-server-url}`
-        - <- `ME_CONFIG_MONGODB_PORT=27017`
-        - NODE_OPTIONS="--unhandled-rejections=strict"
+        # - <- `ME_CONFIG_MONGODB_ENABLE_ADMIN=false`
+        # - <- `ME_CONFIG_MONGODB_AUTH_DATABASE=test`
+        # - <- `ME_CONFIG_MONGODB_AUTH_USERNAME=mongo`
+        # - <- `ME_CONFIG_MONGODB_AUTH_PASSWORD=password`
+        # - <- `ME_CONFIG_MONGODB_SERVER=${mongo-server-url}`
+        - <- `ME_CONFIG_MONGODB_URL=mongodb://${mongo-init-username}:${mongo-init-password}@${mongo-server-url}`
+        # - <- `ME_CONFIG_MONGODB_PORT=27017`
+        # - NODE_OPTIONS="--unhandled-rejections=strict"
         # - <- `ME_CONFIG_MONGODB_URL=mongodb://${mongo-init-username}:${mongo-init-password}@${mongo-server-url}/test`        
       cap-add:
         - CAP_NET_BIND_SERVICE

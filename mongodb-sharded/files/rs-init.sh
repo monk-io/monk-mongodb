@@ -33,11 +33,12 @@ var config = {
 
 rs.initiate(config, { force: true });
 rs.status();
-EOF
 
 echo "****** Waiting for ${DELAY} seconds for replicaset configuration to be applied ******"
 
 sleep $DELAY
+db.createUser({user: "$admin_user", pwd: "$admin_pass", roles:[{role: "userAdminAnyDatabase" , db:"admin"}]})
+EOF
 
 mongosh <<EOF
 EOF
