@@ -1,6 +1,6 @@
 # Monk & MongoDB
 
-This repository contains Monk.io template to deploy MongoDB (MongoDB and MongoDB Express) system either locally or on cloud of your choice (AWS, GCP, Azure, Digital Ocean).
+This repository contains Monk.io template to deploy MongoDB in system either locally or on cloud of your choice (AWS, GCP, Azure, Digital Ocean).
 
 ## Start
 
@@ -19,7 +19,7 @@ In order to load templates and change configuration simply use below commands:
 git clone https://github.com/monk-io/monk-mongodb
 
 # and change directory to the monk-elk template folder
-cd monk-mongodb
+cd monk-mongodb/mongodb
 
 ```
 
@@ -32,7 +32,6 @@ The current variables can be found in `mongodb/variables` section
 ```yaml
   variables:
     mongo-image-tag: "latest"
-    mongo-express-image-tag: "latest"
     mongodb-init-username: "mongo"
     mongodb-init-password: "password"
     mongodb-init-database: "mongo"
@@ -42,8 +41,7 @@ The current variables can be found in `mongodb/variables` section
 
 | Variable | Description | Type | Example |
 |----------|-------------|------|---------|
-| **mongo-image-tag** | Elasticsearch image version. | string | latest |
-| **mongo-image-tag** | Elasticsearch image version. | string | latest |
+| **mongo-image-tag** | MongoDB image version. | string | latest |
 | **mongodb-init-username** | MongoDB Initial root username. | string | mongo |
 | **mongodb-init-password** | MongoDB Initial root password. | string | password |
 | **mongodb-init-database** | MongoDB Initial root database. | string | mongo |
@@ -61,8 +59,7 @@ First clone the repository simply run below command after launching `monkd`:
 
 ✨ Loaded:
  ├─🔩 Runnables:
- │  ├─🧩 mongodb/mongodb
- │  └─🧩 mongodb/mongodb-express
+ │  └─🧩 mongodb/mongodb
  ├─🔗 Process groups:
  │  └─🧩 mongodb/stack
  └─⚙️ Entity instances:
@@ -74,7 +71,6 @@ First clone the repository simply run below command after launching `monkd`:
 ✔ Got the list
 Type      Template                 Repository  Version  Tags
 runnable  mongodb/mongodb          local       latest   database, nosql
-runnable  mongodb/mongodb-express  local       latest   -
 group     mongodb/stack            local       -        -
 
 
@@ -123,8 +119,7 @@ Once cluster is ready execute the same command as for local and select your clus
 
 ✨ Loaded:
  ├─🔩 Runnables:
- │  ├─🧩 mongodb/mongodb
- │  └─🧩 mongodb/mongodb-express
+ │  └─🧩 mongodb/mongodb
  ├─🔗 Process groups:
  │  └─🧩 mongodb/stack
  └─⚙️ Entity instances:
@@ -136,11 +131,10 @@ Once cluster is ready execute the same command as for local and select your clus
 ✔ Got the list
 Type      Template                 Repository  Version  Tags
 runnable  mongodb/mongodb          local       latest   database, nosql
-runnable  mongodb/mongodb-express  local       latest   -
 group     mongodb/stack            local       -        -
 
 
-➜  monk run -t monkha mongodb/stack
+➜  monk run mongodb/stack
 
 ✔ Started local/mongodb/stack
 
@@ -153,22 +147,16 @@ group     mongodb/stack            local       -        -
 # show MongoDB logs
 ➜  monk logs -l 1000 -f mongodb/mongodb
 
-# show MongoDB-express logs
-➜  monk logs -l 1000 -f mongodb/mongodb-express
-
 # access shell in the container running MongoDB
 ➜  monk shell mongodb/mongodb
 
-# access shell in the container running MongoDB Express 
-➜  monk shell mongodb/mongodb-express
 ```
 
 ## Stop, remove and clean up workloads and templates
 
 ```bash
-➜ monk purge  --ii --rv --rs --no-confirm --rv --rs   mongodb/mongodb-express  mongodb/mongodb mongodb/stack 
+➜ monk purge  --ii --rv --rs --no-confirm --rv --rs mongodb/stack 
 
-✔ mongodb/mongodb-express purged
 ✔ mongodb/mongodb purged
 ✔ mongodb/stack purged
 ```
