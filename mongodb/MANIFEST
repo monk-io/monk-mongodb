@@ -1,0 +1,2 @@
+REPO monk-mongodb
+LOAD mongo.yaml stack.yaml

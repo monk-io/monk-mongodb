@@ -1,2 +1,2 @@
-REPO monk-mongodb
-LOAD mongo.yaml stack.yaml
+REPO monk-mariadb
+DIR mariadb mariadb-ha-with-galera
