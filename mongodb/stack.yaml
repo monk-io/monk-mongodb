@@ -4,11 +4,8 @@ stack:
   defines: process-group
   runnable-list:
     - mongodb/mongodb
-    - mongodb/mongodbtest    
-    - mongodb/mongodb-express
   variables:
     mongo-image-tag: "latest"
-    mongo-express-image-tag: "latest"
     mongodb-init-username: "mongo"
     mongodb-init-password: "password"
     mongodb-init-database: "mongo"

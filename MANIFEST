@@ -1,0 +1,2 @@
+REPO monk-mariadb
+DIR mariadb mariadb-ha-with-galera
