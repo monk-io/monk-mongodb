@@ -1,13 +1,13 @@
+---
 namespace: mongodb-sharded
-
 stack:
   defines: process-group
   runnable-list:
     - mongodb-sharded/mongodb-1
     - mongodb-sharded/mongodb-2
-    - mongodb-sharded/mongodb-3 
+    - mongodb-sharded/mongodb-3
   variables:
-    mongo-image-tag: "latest"    
-    mongodb-init-username: "mongo"
-    mongodb-init-password: "password"
-    mongodb-init-database: "mongo"
+    mongo-image-tag: latest
+    mongodb-init-username: mongo
+    mongodb-init-password: password
+    mongodb-init-database: mongo
