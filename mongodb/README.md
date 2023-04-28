@@ -40,7 +40,7 @@ The current variables can be found in `mongodb/variables` section
 
 ## Template variables
 
-| Variable                  | Description                    | Type   | Example  |
+| Variable                  | Description                    | Type   | Default  |
 | ------------------------- | ------------------------------ | ------ | -------- |
 | **mongo-image-tag**       | MongoDB image version.         | string | latest   |
 | **mongodb-init-username** | MongoDB Initial root username. | string | mongo    |

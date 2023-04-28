@@ -1,5 +1,5 @@
----
 namespace: mongodb-sharded
+
 stack:
   defines: process-group
   runnable-list:
