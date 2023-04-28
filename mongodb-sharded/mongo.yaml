@@ -125,7 +125,7 @@ mongodb-1:
   files:
     init-script:
       container: mongodb
-      mode: 645
+      mode: 0644
       path: /scripts/rs-init.sh
       contents: <<< files/rs-init.sh
   actions:
