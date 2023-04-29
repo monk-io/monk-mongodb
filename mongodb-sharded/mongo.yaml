@@ -2,7 +2,6 @@ namespace: mongodb-sharded
 
 mongodb-common:
   defines: runnable
-  version: latest
   metadata:
     name: Mongodb
     version: latest
@@ -75,8 +74,6 @@ mongodb-1:
         - <- `MONGO_INITDB_ROOT_PASSWORD=${mongo-init-password}`
       paths:
         - <- `${monk-volume-path}:/data/db`
-      ports:
-        - <- `${host-port}:27017`
       hooks:
         container-started: create-cluster
   services:
@@ -84,7 +81,7 @@ mongodb-1:
       container: mongodb
       port: 27017
       protocol: tcp
-      host-port: <- `${host-port}` to-i
+      host-port: <- `${host-port}`
   connections:
     mongo-1:
       runnable: mongodb-sharded/mongodb-1
