@@ -45,13 +45,3 @@ mongodb-base:
       value: <- $mongodb-init-database default("mongo")
       type: string
 
-mongodb:
-  defines: runnable
-  inherits: mongodb/mongodb-base
-  metadata:
-    private: true
-  variables:
-    mongo-image-tag: latest
-    mongodb-init-username: mongo
-    mongodb-init-password: password
-    mongodb-init-database: mongo
