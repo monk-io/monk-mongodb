@@ -24,20 +24,19 @@ mongodb-common:
     mongodb:
       image: mongo
       image-tag: <- `${mongo-image}`
-      entrypoint: /usr/bin/mongod --bind_ip_all --replSet dbrs
-      environment:
-        - <- `MONGO_INITDB_ROOT_USERNAME=${mongo-init-username}`
-        - <- `MONGO_INITDB_ROOT_PASSWORD=${mongo-init-password}`
+      entrypoint: '/usr/bin/mongod --bind_ip_all --replSet dbrs'
       paths:
-        - <- `${monk-volume-path}:/data/db`
+        - <- `${monk-volume-path}:/data/db` 
   variables:
     mongo-image:
       value: <- $mongo-image-tag default("latest")
       type: string
     mongo-init-username:
+      env: MONGO_INITDB_ROOT_USERNAME
       value: <- $mongodb-init-username default("mongo")
       type: string
     mongo-init-password:
+      env: MONGO_INITDB_ROOT_PASSWORD
       value: <- $mongodb-init-password default("password")
       type: string
     host-port:
@@ -46,6 +45,7 @@ mongodb-common:
 
 mongodb-1:
   defines: runnable
+  inherits: mongodb-sharded/mongodb-common
   metadata:
     private: true
   readiness:
@@ -54,51 +54,15 @@ mongodb-1:
     period: 10
     initialDelay: 5
   containers:
-    mongodb:
-      image: mongo
-      image-tag: <- `${mongo-image}`
-      entrypoint: /usr/bin/mongod --bind_ip_all --replSet dbrs
-      environment:
-        - <- `MONGO_INITDB_ROOT_USERNAME=${mongo-init-username}`
-        - <- `MONGO_INITDB_ROOT_PASSWORD=${mongo-init-password}`
-      paths:
-        - <- `${monk-volume-path}:/data/db`
+    mongodb:     
       hooks:
-        container-started: create-cluster
-  services:
-    mongo:
-      container: mongodb
-      port: 27017
-      protocol: tcp
-      host-port: <- `${host-port}`
-  connections:
-    mongo-1:
-      runnable: mongodb-sharded/mongodb-1
-      service: mongo
-    mongo-2:
-      runnable: mongodb-sharded/mongodb-2
-      service: mongo
-    mongo-3:
-      runnable: mongodb-sharded/mongodb-3
-      service: mongo
+        container-started: create-cluster      
   depends:
     wait-for:
       runnables:
         - mongodb-sharded/mongodb-2
         - mongodb-sharded/mongodb-3
   variables:
-    mongo-image:
-      value: <- $mongo-image-tag default("latest")
-      type: string
-    mongo-init-username:
-      value: <- $mongodb-init-username default("mongo")
-      type: string
-    mongo-init-password:
-      value: <- $mongodb-init-password default("password")
-      type: string
-    host-port:
-      value: 27017
-      type: int
     mongo1-url:
       type: string
       value: <- connection-hostname("mongo-1") ":" connection-port("mongo-1") concat-all
@@ -111,7 +75,7 @@ mongodb-1:
   files:
     init-script:
       container: mongodb
-      mode: 0644
+      mode: 0645
       path: /scripts/rs-init.sh
       contents: <<< files/rs-init.sh
   actions:

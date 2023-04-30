@@ -2,14 +2,9 @@ namespace: mongodb
 
 mongodb-base:
   defines: runnable
-  services:
-    mongodb:
-      container: mongodb
-      port: 27017
-      protocol: tcp
-      host-port: 27017
   metadata:
     version: latest
+    private: true
     name: Mongodb
     description: |
       MongoDB is a popular open-source NoSQL database management system. It is designed to be scalable and flexible, making it suitable for handling large amounts of unstructured and semi-structured data. 
@@ -25,23 +20,49 @@ mongodb-base:
     mongodb:
       image: mongo
       image-tag: <- `${mongo-image}`
-      environment:
-        - <- `MONGO_INITDB_ROOT_USERNAME=${mongo-init-username}`
-        - <- `MONGO_INITDB_ROOT_PASSWORD=${mongo-init-password}`
-        - <- `MONGO_INITDB_DATABASE=${mongo-init-database}`
-      paths:
-        - <- `${monk-volume-path}/mongodb:/bitnami/mongodb`
   variables:
     mongo-image:
-      value: <- $mongo-image-tag default("latest")
+      value: latest
       type: string
     mongo-init-username:
-      value: <- $mongodb-init-username default("mongo")
+      env: MONGO_INITDB_ROOT_USERNAME
+      value: mongo
       type: string
     mongo-init-password:
-      value: <- $mongodb-init-password default("password")
+      env: MONGO_INITDB_ROOT_PASSWORD
+      value: password
       type: string
     mongo-init-database:
-      value: <- $mongodb-init-database default("mongo")
+      env: MONGO_INITDB_DATABASE
+      value: mongo
       type: string
 
+mongodb:
+  defines: runnable
+  inherits: mongodb/mongodb-base
+  services:
+    mongodb:
+      container: mongodb
+      port: 27017
+      protocol: tcp
+      host-port: 27017
+  containers:
+    mongodb:
+      paths:
+        - <- `${monk-volume-path}/mongodb:/data/db`
+  variables:
+    mongodb-image:
+      value: latest
+      type: string
+    mongo-init-username:
+      env: MONGO_INITDB_ROOT_USERNAME
+      value: mongo
+      type: string
+    mongo-init-password:
+      env: MONGO_INITDB_ROOT_PASSWORD
+      value: password
+      type: string
+    mongo-init-database:
+      env: MONGO_INITDB_DATABASE
+      value: mongo
+      type: string
