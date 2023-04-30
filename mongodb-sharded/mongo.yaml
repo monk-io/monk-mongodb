@@ -24,9 +24,9 @@ mongodb-common:
     mongodb:
       image: mongo
       image-tag: <- `${mongo-image}`
-      entrypoint: '/usr/bin/mongod --bind_ip_all --replSet dbrs'
+      entrypoint: /usr/bin/mongod --bind_ip_all --replSet dbrs
       paths:
-        - <- `${monk-volume-path}:/data/db` 
+        - <- `${monk-volume-path}:/data/db`
   variables:
     mongo-image:
       value: <- $mongo-image-tag default("latest")
@@ -54,9 +54,9 @@ mongodb-1:
     period: 10
     initialDelay: 5
   containers:
-    mongodb:     
+    mongodb:
       hooks:
-        container-started: create-cluster      
+        container-started: create-cluster
   depends:
     wait-for:
       runnables:

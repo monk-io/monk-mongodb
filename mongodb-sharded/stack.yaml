@@ -14,7 +14,7 @@ stack:
     website: https://github.com/mongodb/mongo
     source: https://www.mongodb.com/
     publisher: monk.io
-    icon: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRA8VbFgxH-i78AZmNqD93mVRkTRd30POqLeCmg9T05ug&s  
+    icon: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRA8VbFgxH-i78AZmNqD93mVRkTRd30POqLeCmg9T05ug&s
   runnable-list:
     - mongodb-sharded/mongodb-1
     - mongodb-sharded/mongodb-2
