@@ -40,6 +40,9 @@ mongodb-base:
 mongodb:
   defines: runnable
   inherits: mongodb/mongodb-base
+  metadata:
+    version: latest
+    private: false
   services:
     mongodb:
       container: mongodb
