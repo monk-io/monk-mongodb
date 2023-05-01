@@ -1,19 +1,17 @@
 namespace: mongodb
 
-mongodb:
+mongodb-base:
   defines: runnable
-  version: latest
-  services:
-    mongodb:
-      container: mongodb
-      port: 27017
-      protocol: tcp
-      host-port: 27017 
   metadata:
-    defines: metadata
+    version: latest
+    private: true
     name: Mongodb
-    description: The developer data platform that provides the services and tools necessary to build distributed applications fast, at the performance and scale users demand.
-    tags: database, nosql
+    description: |
+      MongoDB is a popular open-source NoSQL database management system. It is designed to be scalable and flexible, making it suitable for handling large amounts of unstructured and semi-structured data. 
+      MongoDB uses a document-based data model, where data is stored in flexible JSON-like documents that can have varying structures and fields. 
+      This allows for greater flexibility and ease of data management, as data can be added, modified, or deleted without the need for predefined schema or migrations.
+      Additionally, MongoDB provides various features such as dynamic queries, indexing, replication, and sharding, which make it suitable for a wide range of applications and use cases.
+    tags: database, NoSQL, Document-oriented database, Querying, Indexing, Data modeling, JSON, Data analysis
     website: https://github.com/mongodb/mongo
     source: https://www.mongodb.com/
     publisher: monk.io
@@ -22,27 +20,49 @@ mongodb:
     mongodb:
       image: mongo
       image-tag: <- `${mongo-image}`
-      ports:
-        - 27017:27017
-      environment:
-        - <- `MONGO_INITDB_ROOT_USERNAME=${mongo-init-username}`
-        - <- `MONGO_INITDB_ROOT_PASSWORD=${mongo-init-password}`
-        - <- `MONGO_INITDB_DATABASE=${mongo-init-database}`
-      paths: 
-        - <- `${volume_local}:/bitnami/mongodb`
   variables:
-    volume_local:
-      type: string
-      value: <- `${moncc-volume-path}/mongodb`
     mongo-image:
-      value: <- $mongo-image-tag default("latest")
+      value: latest
       type: string
     mongo-init-username:
-      value: <- $mongodb-init-username default("mongo")
+      env: MONGO_INITDB_ROOT_USERNAME
+      value: mongo
       type: string
     mongo-init-password:
-      value: <- $mongodb-init-password default("password")
+      env: MONGO_INITDB_ROOT_PASSWORD
+      value: password
       type: string
     mongo-init-database:
-      value: <- $mongodb-init-database default("mongo")
+      env: MONGO_INITDB_DATABASE
+      value: mongo
+      type: string
+
+mongodb:
+  defines: runnable
+  inherits: mongodb/mongodb-base
+  services:
+    mongodb:
+      container: mongodb
+      port: 27017
+      protocol: tcp
+      host-port: 27017
+  containers:
+    mongodb:
+      paths:
+        - <- `${monk-volume-path}/mongodb:/data/db`
+  variables:
+    mongodb-image:
+      value: latest
+      type: string
+    mongo-init-username:
+      env: MONGO_INITDB_ROOT_USERNAME
+      value: mongo
+      type: string
+    mongo-init-password:
+      env: MONGO_INITDB_ROOT_PASSWORD
+      value: password
+      type: string
+    mongo-init-database:
+      env: MONGO_INITDB_DATABASE
+      value: mongo
       type: string

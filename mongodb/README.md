@@ -4,7 +4,7 @@ This repository contains Monk.io template to deploy MongoDB in system either loc
 
 ## Start
 
-Set up Monk - https://docs.monk.io/docs/monk-in-10/
+[Set up Monk](https://docs.monk.io/docs/monk-in-10/)
 
 Start `monkd` and login.
 
@@ -14,7 +14,8 @@ monk login --email=<email> --password=<password>
 
 ## Clone Monk MongoDB repository
 
-In order to load templates and change configuration simply use below commands: 
+In order to load templates and change configuration simply use below commands:
+
 ```bash
 git clone https://github.com/monk-io/monk-mongodb
 
@@ -37,22 +38,19 @@ The current variables can be found in `mongodb/variables` section
     mongodb-init-database: "mongo"
 ```
 
-##  Template variables
+## Template variables
 
-| Variable | Description | Type | Example |
-|----------|-------------|------|---------|
-| **mongo-image-tag** | MongoDB image version. | string | latest |
-| **mongodb-init-username** | MongoDB Initial root username. | string | mongo |
+| Variable                  | Description                    | Type   | Default  |
+| ------------------------- | ------------------------------ | ------ | -------- |
+| **mongo-image-tag**       | MongoDB image version.         | string | latest   |
+| **mongodb-init-username** | MongoDB Initial root username. | string | mongo    |
 | **mongodb-init-password** | MongoDB Initial root password. | string | password |
-| **mongodb-init-database** | MongoDB Initial root database. | string | mongo |
-
-
-
+| **mongodb-init-database** | MongoDB Initial root database. | string | mongo    |
 
 ## Local Deployment
 
-First clone the repository simply run below command after launching `monkd`:
-:
+| First clone the repository simply run below command after launching `monkd`: |
+| :--------------------------------------------------------------------------: |
 
 ```bash
 ➜  monk load MANIFEST
@@ -81,7 +79,6 @@ group     mongodb/stack            local       -        -
 ```
 
 This will start the entire mongodb/stack.
-
 
 ## Cloud Deployment
 
@@ -114,6 +111,7 @@ Your cluster has been created successfully.
 ```
 
 Once cluster is ready execute the same command as for local and select your cluster (the option will appear automatically).
+
 ```bash
 ➜  monk load MANIFEST
 
