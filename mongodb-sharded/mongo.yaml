@@ -9,7 +9,6 @@ mongodb-common:
       container: mongodb
       port: 27017
       protocol: tcp
-      host-port: <- `${host-port}`
   connections:
     mongo-1:
       runnable: mongodb-sharded/mongodb-1
@@ -39,9 +38,6 @@ mongodb-common:
       env: MONGO_INITDB_ROOT_PASSWORD
       value: <- $mongodb-init-password default("password")
       type: string
-    host-port:
-      value: 27017
-      type: int
 
 mongodb-1:
   defines: runnable
@@ -87,17 +83,9 @@ mongodb-2:
   inherits: mongodb-sharded/mongodb-common
   metadata:
     private: true
-  variables:
-    host-port:
-      value: 27018
-      type: int
 
 mongodb-3:
   defines: runnable
   inherits: mongodb-sharded/mongodb-common
   metadata:
     private: true
-  variables:
-    host-port:
-      value: 27019
-      type: int

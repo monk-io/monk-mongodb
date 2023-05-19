@@ -48,7 +48,6 @@ mongodb:
       container: mongodb
       port: 27017
       protocol: tcp
-      host-port: 27017
   containers:
     mongodb:
       paths:
