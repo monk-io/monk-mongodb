@@ -36,6 +36,7 @@ mongodb-base:
       env: MONGO_INITDB_DATABASE
       value: mongo
       type: string
+      
 
 mongodb:
   defines: runnable
@@ -67,4 +68,25 @@ mongodb:
     mongo-init-database:
       env: MONGO_INITDB_DATABASE
       value: mongo
+      type: string
+
+
+mongodb-noauth:
+  defines: runnable
+  inherits: mongodb/mongodb-base
+  metadata:
+    version: latest
+    private: false
+  services:
+    mongodb:
+      container: mongodb
+      port: 27017
+      protocol: tcp
+  containers:
+    mongodb:
+      paths:
+        - <- `${monk-volume-path}/mongodb:/data/db`
+  variables:
+    mongodb-image:
+      value: latest
       type: string
