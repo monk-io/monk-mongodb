@@ -1,3 +1,4 @@
+---
 namespace: mongodb-sharded
 
 stack:

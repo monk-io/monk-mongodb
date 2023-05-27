@@ -1,8 +1,21 @@
+---
 namespace: mongodb-sharded
 
 mongodb-common:
   defines: runnable
   metadata:
+    name: Mongodb
+    version: latest
+    description: |
+      MongoDB is a popular open-source NoSQL database management system. It is designed to be scalable and flexible, making it suitable for handling large amounts of unstructured and semi-structured data.
+      MongoDB uses a document-based data model, where data is stored in flexible JSON-like documents that can have varying structures and fields.
+      This allows for greater flexibility and ease of data management, as data can be added, modified, or deleted without the need for predefined schema or migrations.
+      Additionally, MongoDB provides various features such as dynamic queries, indexing, replication, and sharding, which make it suitable for a wide range of applications and use cases.
+    tags: document-oriented database, indexing, json, nosql, clustering, querying, data analysis, sharding, data modeling
+    website: https://github.com/mongodb/mongo
+    source: https://www.mongodb.com/
+    publisher: monk.io
+    icon: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRA8VbFgxH-i78AZmNqD93mVRkTRd30POqLeCmg9T05ug&s
     private: true
   services:
     mongo:
@@ -42,8 +55,6 @@ mongodb-common:
 mongodb-1:
   defines: runnable
   inherits: mongodb-sharded/mongodb-common
-  metadata:
-    private: true
   readiness:
     code: |
       exec("mongodb", "/usr/bin/bash", "-c", "echo "rs.status().ok" | mongosh -u ${mongo-init-username} -p ${mongo-init-password} --quiet | grep 1") "1" contains?
@@ -81,11 +92,7 @@ mongodb-1:
 mongodb-2:
   defines: runnable
   inherits: mongodb-sharded/mongodb-common
-  metadata:
-    private: true
 
 mongodb-3:
   defines: runnable
   inherits: mongodb-sharded/mongodb-common
-  metadata:
-    private: true
