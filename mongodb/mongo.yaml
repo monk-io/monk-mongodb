@@ -20,7 +20,7 @@ mongodb-base:
   containers:
     mongodb:
       image: mongo
-      image-tag: <- `${mongo-image}`
+      image-tag: <- $mongo-image
   variables:
     mongo-image:
       value: latest
