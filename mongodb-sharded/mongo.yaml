@@ -35,7 +35,7 @@ mongodb-common:
   containers:
     mongodb:
       image: mongo
-      image-tag: <- `${mongo-image}`
+      image-tag: <- $mongo-image
       entrypoint: /usr/bin/mongod --bind_ip_all --replSet dbrs
       paths:
         - <- `${monk-volume-path}:/data/db`
