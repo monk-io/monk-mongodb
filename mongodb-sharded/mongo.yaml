@@ -22,11 +22,33 @@ mongodb-common:
       container: mongodb
       port: 27017
       protocol: tcp
+  connections:
+    mongo1-config:
+      runnable: mongodb-sharded/mongodb1-config
+      service: mongo
+    mongo2-config:
+      runnable: mongodb-sharded/mongodb2-config
+      service: mongo
+    mongo3-config:
+      runnable: mongodb-sharded/mongodb3-config
+      service: mongo
+    mongos:
+      runnable: mongodb-sharded/mongos
+      service: mongo
+    mongo1-shard1:
+      runnable: mongodb-sharded/mongodb1-shard1
+      service: mongo
+    mongo2-shard1:
+      runnable: mongodb-sharded/mongodb2-shard1
+      service: mongo
+    mongo3-shard1:
+      runnable: mongodb-sharded/mongodb3-shard1
+      service: mongo
   containers:
     mongodb:
       image: <- $mongo-image
       image-tag: <- $mongo-image-tag
-      entrypoint: <- `/usr/bin/mongod --noauth --bind_ip_all --configsvr --replSet ${mongo-replset} --port ${mongo-port} --dbpath ${mongo-dbpath}`
+      entrypoint: <- `/usr/bin/mongod --noauth --bind_ip_all --replSet ${mongo-replset} --port ${mongo-port} --dbpath ${mongo-dbpath}`
       paths:
         - <- `${monk-volume-path}/mongodb:${mongo-dbpath}`
   variables:
@@ -60,30 +82,13 @@ mongodb-common:
 mongodb-common-config:
   defines: runnable
   inherits: mongodb-sharded/mongodb-common
-  connections:
-    mongo-1:
-      runnable: mongodb-sharded/mongodb1-config
-      service: mongo
-    mongo-2:
-      runnable: mongodb-sharded/mongodb2-config
-      service: mongo
-    mongo-3:
-      runnable: mongodb-sharded/mongodb3-config
-      service: mongo
+  containers:
+    mongodb:
+      entrypoint: <- `/usr/bin/mongod --noauth --bind_ip_all --configsvr --replSet ${mongo-replset} --port ${mongo-port} --dbpath ${mongo-dbpath}`
 
 mongodb-common-shard1:
   defines: runnable
   inherits: mongodb-sharded/mongodb-common
-  connections:
-    mongo-1:
-      runnable: mongodb-sharded/mongodb1-shard1
-      service: mongo
-    mongo-2:
-      runnable: mongodb-sharded/mongodb2-shard1
-      service: mongo
-    mongo-3:
-      runnable: mongodb-sharded/mongodb3-shard1
-      service: mongo
   containers:
     mongodb:
       entrypoint: <- `/usr/bin/mongod --noauth --bind_ip_all --shardsvr --replSet ${mongo-replset} --port ${mongo-port} --dbpath ${mongo-dbpath}`
@@ -174,13 +179,13 @@ mongodb1-config:
   variables:
     mongo1-url:
       type: string
-      value: <- connection-ip("mongo-1") ":" connection-port("mongo-1") concat-all
+      value: <- connection-ip("mongo1-config") ":" connection-port("mongo1-config") concat-all
     mongo2-url:
       type: string
-      value: <- connection-ip("mongo-2") ":" connection-port("mongo-2") concat-all
+      value: <- connection-ip("mongo2-config") ":" connection-port("mongo2-config") concat-all
     mongo3-url:
       type: string
-      value: <- connection-ip("mongo-3") ":" connection-port("mongo-3") concat-all
+      value: <- connection-ip("mongo3-config") ":" connection-port("mongo3-config") concat-all
   files:
     init-script:
       container: mongodb
@@ -233,13 +238,13 @@ mongodb1-shard1:
   variables:
     mongo1-url:
       type: string
-      value: <- connection-ip("mongo-1") ":" connection-port("mongo-1") concat-all
+      value: <- connection-ip("mongo1-shard1") ":" connection-port("mongo1-shard1") concat-all
     mongo2-url:
       type: string
-      value: <- connection-ip("mongo-2") ":" connection-port("mongo-2") concat-all
+      value: <- connection-ip("mongo2-shard1") ":" connection-port("mongo2-shard1") concat-all
     mongo3-url:
       type: string
-      value: <- connection-ip("mongo-3") ":" connection-port("mongo-3") concat-all
+      value: <- connection-ip("mongo3-shard1") ":" connection-port("mongo3-shard1") concat-all
   files:
     init-script:
       container: mongodb
