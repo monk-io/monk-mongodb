@@ -1,7 +1,7 @@
 ---
 namespace: mongodb-sharded
 
-stack:
+config:
   defines: process-group
   metadata:
     name: Mongodb
@@ -17,11 +17,42 @@ stack:
     publisher: monk.io
     icon: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRA8VbFgxH-i78AZmNqD93mVRkTRd30POqLeCmg9T05ug&s
   runnable-list:
-    - mongodb-sharded/mongodb-1
-    - mongodb-sharded/mongodb-2
-    - mongodb-sharded/mongodb-3
+    - mongodb-sharded/mongodb1-config
+    - mongodb-sharded/mongodb2-config
+    - mongodb-sharded/mongodb3-config
   variables:
-    mongo-image-tag: latest
+    mongodb-port: 27017
+    mongodb-replset: config
+    mongodb-image: mongo
+    mongodb-image-tag: 7.0.15
+    mongodb-init-username: mongo
+    mongodb-init-password: password
+    mongodb-init-database: mongo
+
+shard1:
+  defines: process-group
+  metadata:
+    name: Mongodb
+    version: latest
+    description: |
+      MongoDB is a popular open-source NoSQL database management system. It is designed to be scalable and flexible, making it suitable for handling large amounts of unstructured and semi-structured data. 
+      MongoDB uses a document-based data model, where data is stored in flexible JSON-like documents that can have varying structures and fields. 
+      This allows for greater flexibility and ease of data management, as data can be added, modified, or deleted without the need for predefined schema or migrations.
+      Additionally, MongoDB provides various features such as dynamic queries, indexing, replication, and sharding, which make it suitable for a wide range of applications and use cases.
+    tags: document-oriented database, indexing, json, nosql, clustering, querying, data analysis, sharding, data modeling
+    website: https://github.com/mongodb/mongo
+    source: https://www.mongodb.com/
+    publisher: monk.io
+    icon: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRA8VbFgxH-i78AZmNqD93mVRkTRd30POqLeCmg9T05ug&s
+  runnable-list:
+    - mongodb-sharded/mongodb1-shard1
+    - mongodb-sharded/mongodb2-shard1
+    - mongodb-sharded/mongodb3-shard1
+  variables:
+    mongodb-port: 27017
+    mongodb-replset: shard1
+    mongodb-image: mongo
+    mongodb-image-tag: 7.0.15
     mongodb-init-username: mongo
     mongodb-init-password: password
     mongodb-init-database: mongo

@@ -19,10 +19,13 @@ mongodb-base:
     private: true
   containers:
     mongodb:
-      image: mongo
-      image-tag: <- $mongo-image
+      image: <- $mongo-image
+      image-tag: <- $mongo-image-tag
   variables:
     mongo-image:
+      value: mongo
+      type: string
+    mongo-image-tag:
       value: latest
       type: string
     mongo-init-username:
@@ -53,7 +56,10 @@ mongodb:
       paths:
         - <- `${monk-volume-path}/mongodb:/data/db`
   variables:
-    mongodb-image:
+    mongo-image:
+      value: mongo
+      type: string
+    mongo-image-tag:
       value: latest
       type: string
     mongo-init-username:
@@ -84,6 +90,9 @@ mongodb-noauth:
       paths:
         - <- `${monk-volume-path}/mongodb:/data/db`
   variables:
-    mongodb-image:
+    mongo-image:
+      value: mongo
+      type: string
+    mongo-image-tag:
       value: latest
       type: string
