@@ -1,2 +1,2 @@
 REPO monk-mongodb
-DIRS mongodb mongodb-sharded
+DIRS mongodb mongodb-replicated mongodb-sharded

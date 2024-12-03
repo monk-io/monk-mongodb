@@ -1,0 +1,112 @@
+---
+namespace: mongodb-replicated
+
+mongodb-common:
+  defines: runnable
+  metadata:
+    name: Mongodb
+    version: latest
+    description: |
+      MongoDB is a popular open-source NoSQL database management system. It is designed to be scalable and flexible, making it suitable for handling large amounts of unstructured and semi-structured data.
+      MongoDB uses a document-based data model, where data is stored in flexible JSON-like documents that can have varying structures and fields.
+      This allows for greater flexibility and ease of data management, as data can be added, modified, or deleted without the need for predefined schema or migrations.
+      Additionally, MongoDB provides various features such as dynamic queries, indexing, replication, and sharding, which make it suitable for a wide range of applications and use cases.
+    tags: document-oriented database, indexing, json, nosql, clustering, querying, data analysis, sharding, data modeling
+    website: https://github.com/mongodb/mongo
+    source: https://www.mongodb.com/
+    publisher: monk.io
+    icon: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRA8VbFgxH-i78AZmNqD93mVRkTRd30POqLeCmg9T05ug&s
+    private: true
+  services:
+    mongo:
+      container: mongodb
+      port: 27017
+      protocol: tcp
+  connections:
+    mongo-1:
+      runnable: mongodb-replicated/mongodb-1
+      service: mongo
+    mongo-2:
+      runnable: mongodb-replicated/mongodb-2
+      service: mongo
+    mongo-3:
+      runnable: mongodb-replicated/mongodb-3
+      service: mongo
+  containers:
+    mongodb:
+      image: mongo
+      image-tag: <- $mongo-image
+      entrypoint: /usr/bin/mongod --bind_ip_all --configsvr --replSet dbrs --port 27017 --dbpath /data/db
+      paths:
+        - <- `${monk-volume-path}/mongodb:/data/db`
+  variables:
+    mongo-image:
+      value: <- $mongo-image-tag default("latest")
+      type: string
+    mongo-init-username:
+      env: MONGO_INITDB_ROOT_USERNAME
+      value: <- $mongodb-init-username default("mongo")
+      type: string
+    mongo-init-password:
+      env: MONGO_INITDB_ROOT_PASSWORD
+      value: <- $mongodb-init-password default("password")
+      type: string
+
+mongodb-1:
+  defines: runnable
+  inherits: mongodb-replicated/mongodb-common
+  readiness:
+    code: |
+      exec("mongodb", "/usr/bin/bash", "-c", "echo "rs.status().ok" | mongosh -u ${mongo-init-username} -p ${mongo-init-password} --quiet | grep 1") "1" contains?
+    period: 10
+    initialDelay: 5
+  containers:
+    mongodb:
+      hooks:
+        container-started: create-cluster
+      paths:
+        - <- `${monk-volume-path}/mongodb-1:/data/db`
+  depends:
+    wait-for:
+      runnables:
+        - mongodb-replicated/mongodb-2
+        - mongodb-replicated/mongodb-3
+  variables:
+    mongo1-url:
+      type: string
+      value: <- connection("mongo-1")
+    mongo2-url:
+      type: string
+      value: <- connection("mongo-2")
+    mongo3-url:
+      type: string
+      value: <- connection("mongo-3")
+  files:
+    init-script:
+      container: mongodb
+      mode: 645
+      path: /scripts/rs-init.sh
+      contents: <<< files/rs-init.sh
+  actions:
+    create-cluster:
+      description: Create cluster
+      code: exec("mongodb", "/bin/bash", "-c", `/scripts/rs-init.sh`)
+    create-status:
+      description: Cluster status
+      code: exec("mongodb", "/bin/bash", "-c", `echo "rs.status()" | mongosh -u ${mongo-init-username} -p ${mongo-init-password}`)
+
+mongodb-2:
+  defines: runnable
+  inherits: mongodb-replicated/mongodb-common
+  containers:
+    mongodb:
+      paths:
+        - <- `${monk-volume-path}/mongodb-2:/data/db`
+
+mongodb-3:
+  defines: runnable
+  inherits: mongodb-replicated/mongodb-common
+  containers:
+    mongodb:
+      paths:
+        - <- `${monk-volume-path}/mongodb-3:/data/db`

@@ -1,6 +1,6 @@
 ---
 namespace: mongodb-sharded
-
+  
 mongodb-common:
   defines: runnable
   metadata:
@@ -23,25 +23,52 @@ mongodb-common:
       port: 27017
       protocol: tcp
   connections:
-    mongo-1:
-      runnable: mongodb-sharded/mongodb-1
+    mongo1-config:
+      runnable: mongodb-sharded/mongodb1-config
       service: mongo
-    mongo-2:
-      runnable: mongodb-sharded/mongodb-2
+    mongo2-config:
+      runnable: mongodb-sharded/mongodb2-config
       service: mongo
-    mongo-3:
-      runnable: mongodb-sharded/mongodb-3
+    mongo3-config:
+      runnable: mongodb-sharded/mongodb3-config
+      service: mongo
+    mongos:
+      runnable: mongodb-sharded/mongos
+      service: mongo
+    mongo1-shard1:
+      runnable: mongodb-sharded/mongodb1-shard1
+      service: mongo
+    mongo2-shard1:
+      runnable: mongodb-sharded/mongodb2-shard1
+      service: mongo
+    mongo3-shard1:
+      runnable: mongodb-sharded/mongodb3-shard1
       service: mongo
   containers:
     mongodb:
-      image: mongo
-      image-tag: <- $mongo-image
-      entrypoint: /usr/bin/mongod --bind_ip_all --replSet dbrs
+      image: <- $mongo-image
+      image-tag: <- $mongo-image-tag
+      entrypoint: <- `/usr/bin/mongod --noauth --bind_ip_all --replSet ${mongo-replset} --port ${mongo-port} --dbpath ${mongo-dbpath}`
       paths:
-        - <- `${monk-volume-path}:/data/db`
+        - <- `${monk-volume-path}/mongodb:${mongo-dbpath}`
   variables:
     mongo-image:
-      value: <- $mongo-image-tag default("latest")
+      value: <- $mongodb-image default("mongo")
+      type: string
+    mongo-image-tag:
+      value: <- $mongodb-image-tag default("7.0.15")
+      type: string
+    mongo-replset:
+      env: MONGO_REPLSET
+      value: <- $mongodb-replset default("config")
+      type: string
+    mongo-port:
+      env: MONGO_PORT
+      value: <- $mongodb-port default("27017")
+      type: string
+    mongo-dbpath:
+      env: MONGO_DBPATH
+      value: <- $mongodb-dbpath default("/data/db")
       type: string
     mongo-init-username:
       env: MONGO_INITDB_ROOT_USERNAME
@@ -52,33 +79,113 @@ mongodb-common:
       value: <- $mongodb-init-password default("password")
       type: string
 
-mongodb-1:
+mongodb-common-config:
+  defines: runnable
+  inherits: mongodb-sharded/mongodb-common
+  containers:
+    mongodb:
+      entrypoint: <- `/usr/bin/mongod --noauth --bind_ip_all --configsvr --replSet ${mongo-replset} --port ${mongo-port} --dbpath ${mongo-dbpath}`
+
+mongodb-common-shard1:
+  defines: runnable
+  inherits: mongodb-sharded/mongodb-common
+  containers:
+    mongodb:
+      entrypoint: <- `/usr/bin/mongod --noauth --bind_ip_all --shardsvr --replSet ${mongo-replset} --port ${mongo-port} --dbpath ${mongo-dbpath}`
+
+mongos:
   defines: runnable
   inherits: mongodb-sharded/mongodb-common
   readiness:
     code: |
-      exec("mongodb", "/usr/bin/bash", "-c", "echo "rs.status().ok" | mongosh -u ${mongo-init-username} -p ${mongo-init-password} --quiet | grep 1") "1" contains?
+      exec("mongodb", "/usr/bin/bash", "-c", "mongosh --quiet --eval 'sh.status().ok' | grep 1") "1" contains?
+    period: 10
+    initialDelay: 5
+  variables:
+    mongodb-image-tag:
+      value: 7.0.15
+      type: string
+    mongo-rs-config:
+      env: MONGO_RS_CONFIG
+      value: config
+      type: string
+    mongo-rshosts-config:
+      env: MONGO_RSHOSTS_CONFIG
+      value: <- connection-ip("mongo1-config") ":" connection-port("mongo1-config") "," connection-ip("mongo2-config") ":" connection-port("mongo2-config") "," connection-ip("mongo3-config") ":" connection-port("mongo3-config") concat-all
+      type: string
+    mongo-rs-shard1:
+      env: MONGO_RS_SHARD1
+      value: shard1
+      type: string
+    mongo-rshosts-shard1:
+      env: MONGO_RSHOSTS_SHARD1
+      value: <- connection-ip("mongo1-shard1") ":" connection-port("mongo1-shard1") "," connection-ip("mongo2-shard1") ":" connection-port("mongo2-shard1") "," connection-ip("mongo3-shard1") ":" connection-port("mongo3-shard1") concat-all
+      type: string
+  depends:
+    wait-for:
+      runnables:
+        - mongodb-sharded/mongodb1-config
+  connections:
+    mongo1-config:
+      runnable: mongodb-sharded/mongodb1-config
+      service: mongo
+    mongo2-config:
+      runnable: mongodb-sharded/mongodb2-config
+      service: mongo
+    mongo3-config:
+      runnable: mongodb-sharded/mongodb3-config
+      service: mongo
+    mongo1-shard1:
+      runnable: mongodb-sharded/mongodb1-shard1
+      service: mongo
+    mongo2-shard1:
+      runnable: mongodb-sharded/mongodb2-shard1
+      service: mongo
+    mongo3-shard1:
+      runnable: mongodb-sharded/mongodb3-shard1
+      service: mongo
+  containers:
+    mongodb:
+      entrypoint: <- `/usr/bin/mongos --noauth --bind_ip_all --configdb ${mongo-rs-config}/${mongo-rshosts-config} --port ${mongo-port}`
+      paths:
+        - <- `${monk-volume-path}/mongos:${mongo-dbpath}`
+  actions:
+    status:
+      description: Status
+      code: exec("mongodb", "/bin/bash", "-c", `mongosh --eval "sh.status()"`)
+    add-shard1:
+      description: Add shard 1
+      code: exec("mongodb", "/bin/bash", "-c", `mongosh --eval "sh.addShard('${mongo-rs-shard1}/${mongo-rshosts-shard1}')"`)
+
+mongodb1-config:
+  defines: runnable
+  inherits: mongodb-sharded/mongodb-common-config
+  readiness:
+    code: |
+      exec("mongodb", "/usr/bin/bash", "-c", "mongosh --quiet --eval "rs.status().ok" | grep 1") "1" contains?
     period: 10
     initialDelay: 5
   containers:
     mongodb:
       hooks:
         container-started: create-cluster
+      paths:
+        - <- `${monk-volume-path}/mongodb1-config:${mongo-dbpath}`
   depends:
     wait-for:
       runnables:
-        - mongodb-sharded/mongodb-2
-        - mongodb-sharded/mongodb-3
+        - mongodb-sharded/mongodb2-config
+        - mongodb-sharded/mongodb3-config
   variables:
     mongo1-url:
       type: string
-      value: <- connection-hostname("mongo-1") ":" connection-port("mongo-1") concat-all
+      value: <- connection-ip("mongo1-config") ":" connection-port("mongo1-config") concat-all
     mongo2-url:
       type: string
-      value: <- connection-hostname("mongo-2") ":" connection-port("mongo-2") concat-all
+      value: <- connection-ip("mongo2-config") ":" connection-port("mongo2-config") concat-all
     mongo3-url:
       type: string
-      value: <- connection-hostname("mongo-3") ":" connection-port("mongo-3") concat-all
+      value: <- connection-ip("mongo3-config") ":" connection-port("mongo3-config") concat-all
   files:
     init-script:
       container: mongodb
@@ -87,12 +194,83 @@ mongodb-1:
       contents: <<< files/rs-init.sh
   actions:
     create-cluster:
+      description: Create cluster
       code: exec("mongodb", "/bin/bash", "-c", `/scripts/rs-init.sh`)
+    status:
+      description: Status
+      code: exec("mongodb", "/bin/bash", "-c", `mongosh --eval "rs.status()"`)
 
-mongodb-2:
+mongodb2-config:
   defines: runnable
-  inherits: mongodb-sharded/mongodb-common
+  inherits: mongodb-sharded/mongodb-common-config
+  containers:
+    mongodb:
+      paths:
+        - <- `${monk-volume-path}/mongodb2-config:${mongo-dbpath}`
 
-mongodb-3:
+mongodb3-config:
   defines: runnable
-  inherits: mongodb-sharded/mongodb-common
+  inherits: mongodb-sharded/mongodb-common-config
+  containers:
+    mongodb:
+      paths:
+        - <- `${monk-volume-path}/mongodb3-config:${mongo-dbpath}`
+
+mongodb1-shard1:
+  defines: runnable
+  inherits: mongodb-sharded/mongodb-common-shard1
+  readiness:
+    code: |
+      exec("mongodb", "/usr/bin/bash", "-c", "mongosh --quiet --eval "rs.status().ok" | grep 1") "1" contains?
+    period: 10
+    initialDelay: 5
+  containers:
+    mongodb:
+      hooks:
+        container-started: create-cluster
+      paths:
+        - <- `${monk-volume-path}/mongodb1-shard1:${mongo-dbpath}`
+  depends:
+    wait-for:
+      runnables:
+        - mongodb-sharded/mongodb2-shard1
+        - mongodb-sharded/mongodb3-shard1
+  variables:
+    mongo1-url:
+      type: string
+      value: <- connection-ip("mongo1-shard1") ":" connection-port("mongo1-shard1") concat-all
+    mongo2-url:
+      type: string
+      value: <- connection-ip("mongo2-shard1") ":" connection-port("mongo2-shard1") concat-all
+    mongo3-url:
+      type: string
+      value: <- connection-ip("mongo3-shard1") ":" connection-port("mongo3-shard1") concat-all
+  files:
+    init-script:
+      container: mongodb
+      mode: 645
+      path: /scripts/sh-init.sh
+      contents: <<< files/sh-init.sh
+  actions:
+    create-cluster:
+      description: Create cluster
+      code: exec("mongodb", "/bin/bash", "-c", `/scripts/sh-init.sh`)
+    status:
+      description: Status
+      code: exec("mongodb", "/bin/bash", "-c", `mongosh --eval "rs.status()"`)
+
+mongodb2-shard1:
+  defines: runnable
+  inherits: mongodb-sharded/mongodb-common-shard1
+  containers:
+    mongodb:
+      paths:
+        - <- `${monk-volume-path}/mongodb2-shard1:${mongo-dbpath}`
+
+mongodb3-shard1:
+  defines: runnable
+  inherits: mongodb-sharded/mongodb-common-shard1
+  containers:
+    mongodb:
+      paths:
+        - <- `${monk-volume-path}/mongodb3-shard1:${mongo-dbpath}`
