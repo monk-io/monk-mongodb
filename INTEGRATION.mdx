@@ -1,0 +1,141 @@
+---
+title: MongoDB
+description: Ready-to-run MongoDB container template you can run directly or inherit to integrate a document-oriented NoSQL database into your stack.
+primary_category: database
+tags: [mongodb, nosql, database, template, runnable, document, json]
+integration_type: template
+hosting_models: [self-hosted]
+website_url: https://www.mongodb.com/
+docs_url: https://docs.mongodb.com/
+publisher: monk.io
+---
+
+## Overview
+
+This template provides a production‑ready MongoDB instance as a Monk runnable. You can:
+
+- Run it directly to get a managed MongoDB container with sensible defaults
+- Inherit it in your own runnable to seamlessly add a document database to your stack
+
+It exposes MongoDB on port 27017, persists data to a host volume, and can optionally create an application user and database on first start.
+
+## What this template manages
+
+- MongoDB container (`mongo` image, configurable tag)
+- Network service on port 27017
+- Persistent volumes for data storage
+- Optional initialization of database, user, and passwords
+
+## Quick start (run directly)
+
+1) Load templates
+
+```bash
+monk load MANIFEST
+```
+
+2) Run MongoDB with defaults
+
+```bash
+monk run mongodb/mongodb
+```
+
+3) Customize credentials (recommended via inheritance)
+
+Running directly uses the defaults defined in this template's `variables`. Secrets added with `monk secrets add` will not affect this runnable unless you inherit it and reference those secrets.
+
+- Preferred: inherit and replace variables with `secret("...")` as shown below.
+- Alternative: fork/clone and edit the `variables` in `mongodb/mongodb.yaml`, then `monk load MANIFEST` and run.
+
+Once started, connect to `localhost:27017` (or the runnable hostname inside Monk networks) using the configured credentials.
+
+## Configuration
+
+Key variables you can customize in this template:
+
+```yaml
+variables:
+  mongodb-image-tag: "latest"         # container image tag
+  mongodb-root-username: "admin"      # admin username (env: MONGO_INITDB_ROOT_USERNAME)
+  mongodb-root-password: "..."        # admin password (env: MONGO_INITDB_ROOT_PASSWORD)
+  mongodb-database: "mydb"            # optional app DB to create (env: MONGO_INITDB_DATABASE)
+  mongodb-username: "myuser"          # optional app user
+  mongodb-password: "..."             # optional app user password
+```
+Data is persisted under `${monk-volume-path}/mongodb` on the host.
+
+## Use by inheritance (recommended for apps)
+
+Inherit the MongoDB runnable in your application and declare a connection. Example:
+
+```yaml
+namespace: myapp
+db:
+  defines: runnable
+  inherits: mongodb/mongodb
+api:
+  defines: runnable
+  containers:
+    api:
+      image: myorg/api
+  connections:
+    database:
+      runnable: db
+      service: mongodb
+  variables:
+    database-host:
+      value: <- connection-hostname("database")
+    database-user:
+      value: <- secret("mongodb-username")
+    database-password:
+      value: <- secret("mongodb-password")
+    database-name:
+      value: <- secret("mongodb-database")
+```
+
+Then set the secrets once and run your app group:
+
+```bash
+monk secrets add -g mongodb-username="appuser"
+monk secrets add -g mongodb-password="STRONG_USER_PASSWORD"
+monk secrets add -g mongodb-database="appdb"
+monk secrets add -g mongodb-root-password="STRONG_ROOT_PASSWORD"
+monk run myapp/api
+```
+
+## Ports and connectivity
+
+- Service: `mongodb` on TCP port `27017`
+- From other runnables in the same process group, use `connection-hostname("<connection-name>")` to resolve the DB host.
+
+## Persistence
+
+- Data path: `${monk-volume-path}/mongodb:/data/db`
+- MongoDB stores all databases and collections in this directory
+- Ensure the host volume is writable by the container user
+
+## Features
+
+- Document-oriented storage
+- Rich query language
+- Indexing and aggregation
+- Replication and sharding
+- ACID transactions
+- Change streams
+
+## Related templates
+
+- For MongoDB replica set cluster, see `mongodb-cluster/` templates
+- For sharded deployments, check MongoDB sharding templates
+- Combine with `mongo-express/` for web-based administration
+
+## Troubleshooting
+
+- If you changed `mongodb-root-password` but the container has existing data, authentication may fail. Either reset the data volume or update the password inside the DB to match.
+- Ensure the host volumes are writable by the container user.
+- Check logs:
+
+```bash
+monk logs -l 500 -f mongodb/mongodb
+```
+
