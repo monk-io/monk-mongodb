@@ -60,6 +60,10 @@ mongodb-1:
       exec("mongodb", "/usr/bin/bash", "-c", "echo "rs.status().ok" | mongosh -u ${mongo-init-username} -p ${mongo-init-password} --quiet | grep 1") "1" contains?
     period: 10
     initialDelay: 5
+  liveness:
+    code: |
+      exec("mongodb", "/usr/bin/bash", "-c", "echo "rs.status().ok" | mongosh -u ${mongo-init-username} -p ${mongo-init-password} --quiet | grep 1") "1" contains?
+    period: 60
   containers:
     mongodb:
       hooks:
