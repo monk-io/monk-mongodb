@@ -53,9 +53,6 @@ mongodb:
       paths:
         - <- `${monk-volume-path}/mongodb:/data/db`
   variables:
-    mongodb-image:
-      value: latest
-      type: string
     mongo-init-username:
       env: MONGO_INITDB_ROOT_USERNAME
       value: mongo
@@ -83,7 +80,3 @@ mongodb-noauth:
     mongodb:
       paths:
         - <- `${monk-volume-path}/mongodb:/data/db`
-  variables:
-    mongodb-image:
-      value: latest
-      type: string
