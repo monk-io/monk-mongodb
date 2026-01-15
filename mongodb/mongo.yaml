@@ -11,6 +11,12 @@ mongodb-base:
       MongoDB uses a document-based data model, where data is stored in flexible JSON-like documents that can have varying structures and fields.
       This allows for greater flexibility and ease of data management, as data can be added, modified, or deleted without the need for predefined schema or migrations.
       Additionally, MongoDB provides various features such as dynamic queries, indexing, replication, and sharding, which make it suitable for a wide range of applications and use cases.
+
+      Hints:
+      - when connecting use authSource=admin parameter
+      - example connection string: <- "http://" $user ":" $pass "@" connection-hostname("mongo") ":" connection-port("mongo") "/" $db-name "?authSource=admin" concat-all
+      - without auth, if pass and user empty: <- "http://" connection-hostname("mongo") ":" connection-port("mongo") "/" $db-name "?authSource=admin" concat-all
+      
     tags: document-oriented database, indexing, json, nosql, querying, data analysis, data modeling
     website: https://github.com/mongodb/mongo
     source: https://www.mongodb.com/
