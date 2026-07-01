@@ -56,8 +56,12 @@ mongodb:
       protocol: tcp
   containers:
     mongodb:
-      paths:
-        - <- `${monk-volume-path}/mongodb:/data/db`
+      mounted-volumes:
+        mongodb-data:
+          path: /data/db
+  volumes:
+    mongodb-data:
+      kind: local
   variables:
     mongo-init-username:
       env: MONGO_INITDB_ROOT_USERNAME
@@ -84,5 +88,9 @@ mongodb-noauth:
       protocol: tcp
   containers:
     mongodb:
-      paths:
-        - <- `${monk-volume-path}/mongodb:/data/db`
+      mounted-volumes:
+        mongodb-data:
+          path: /data/db
+  volumes:
+    mongodb-data:
+      kind: local
